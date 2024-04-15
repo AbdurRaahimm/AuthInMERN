@@ -33,7 +33,7 @@ export default function ForgotPassword() {
         <section className='bg-gradient-to-r from-emerald-400 to-cyan-400 h-screen'>
             <div className="bg-white w-8/12 mx-auto translate-y-1/3 py-8 rounded-md ">
                 <h1 className='text-3xl font-bold text-center'>Forgot Password</h1>
-                <p> Enter your email to get a password reset link </p>
+                <p className='text-center'> Enter your email to get a password reset link </p>
                 <form className='w-1/3 mx-auto mt-5' onSubmit={handleForgetPassword}>
 
                     <div className='mb-5'>
