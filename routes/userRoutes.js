@@ -1,9 +1,9 @@
-
 import User from "../models/userModel.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import multer from "multer";
 import express from 'express';
+import nodemailer from "nodemailer";
 
 const router = express.Router();
 
@@ -91,6 +91,73 @@ router.get("/logout", (req, res) => {
     }
     catch (error) {
         res.status(500).json({ message: 'Server Error', error: error.message });
+    }
+});
+
+// forgot password 
+router.post("/forgot-password", async (req, res) => {
+    try {
+        // check if user exists
+        const user = await User.findOne({ email: req.body.email });
+        if (!user) {
+            throw new Error("User does not exist");
+        }
+        // generate token 
+        const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, { expiresIn: "30m" }); 
+        // send email with token
+        const transporter = nodemailer.createTransport({
+            host: "smtp.elasticemail.com",
+            port: 2525,
+            secure: false,
+            auth: {
+                user: process.env.EMAIL,
+                pass: process.env.PASSWORD
+            }
+        });
+        const mailOptions = {
+            from: process.env.EMAIL,
+            to: req.body.email,
+            subject: 'Password Reset Notification',
+            html: `
+                <h1>Password Reset</h1>
+                <h2>Click on the link below to reset your password</h2>
+                <a href="http://localhost:5173/reset-password/${token}">Reset Password</a>
+            `
+        };
+        transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                throw new Error('Email could not be sent');
+            }
+            res.status(200).json({ message: 'Email sent successfully' });
+        });
+    }
+    catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// reset password
+router.post("/reset-password/:token", async (req, res) => {
+    try {
+        // check if token is valid
+        const decoded = jwt.verify(req.params.token, process.env.JWT_SECRET);
+        if (!decoded) {
+            throw new Error("Invalid or expired token");
+        }
+        // check if user exists
+        const user = await User.findById(decoded._id);
+        if (!user) {
+            throw new Error("User does not exist");
+        }
+
+        // hash the password
+        const hashedPassword = await bcrypt.hash(req.body.password, 10);
+        user.password = hashedPassword;
+        await user.save();
+        res.status(200).json({ message: 'Password reset successfully' });
+    }
+    catch (error) {
+        res.status(500).json({ message: error.message });
     }
 });
 

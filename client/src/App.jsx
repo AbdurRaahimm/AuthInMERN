@@ -7,6 +7,7 @@ import Profile from "./pages/Profile";
 import About from "./pages/About";
 import { getCookie } from "./lib/cookies";
 import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 const token = getCookie('token');
 
@@ -21,6 +22,7 @@ const router = createBrowserRouter(
       <Route path="signin" element={token ? <Navigate to='/' /> : <SignIn />} />
       <Route path="signup" element={token ? <Navigate to='/' /> : <SignUp />} />
       <Route path="forgotpassword" element={token ? <Navigate to='/' /> : <ForgotPassword />} />
+      <Route path="reset-password/:token" element={token ? <Navigate to='/' /> : <ResetPassword />} />
     </>
   )
 );
